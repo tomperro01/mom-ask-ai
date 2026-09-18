@@ -219,26 +219,56 @@ function makePrompt(){
   const avoid=document.getElementById("avoid").value.trim();
   const style=document.getElementById("style").value;
 
-  let prompt=`Create 3 easy dinner ideas for ${people} people. `;
+  let prompt=`You are helping a busy mom figure out dinner tonight.
 
-  if(time.includes("minutes")){
-    prompt+=`They should take no more than ${time}. `;
-  }else{
-    prompt+=`I have enough time to make something especially good. `;
-  }
+Create 3 realistic dinner ideas for ${people} people`;
 
-  if(ingredients){
-    prompt+=`I already have these ingredients: ${ingredients}. `;
-  }
+if(time.includes("minutes")){
+  prompt+=` that can be made in ${time} or less.`;
+}else{
+  prompt+=`. I have enough time tonight to make something good.`;
+}
 
-  if(picky==="Yes"){
-    prompt+=`There are picky eaters. `;
-    if(avoid) prompt+=`Avoid: ${avoid}. `;
-  }
+if(ingredients){
+  prompt+=`
 
-  prompt+=`Tonight I'm looking for: ${style}. `;
-  prompt+=`Keep the meals family-friendly, reasonably inexpensive, and simple to make. Give me 3 options first. After I choose one, give me the full recipe and easy step-by-step instructions.`;
+I already have: ${ingredients}`;
+}
 
+prompt+=`
+
+Picky eaters: ${picky}`;
+
+if(picky==="Yes" && avoid){
+  prompt+=`
+Foods to avoid: ${avoid}`;
+}
+
+prompt+=`
+
+Tonight I'm in the mood for: ${style}
+
+Prioritize meals that:
+- Use as many of the ingredients I already have as reasonably possible
+- Require minimal additional groceries
+- Are family-friendly and likely to appeal to kids
+- Use normal, easy-to-find ingredients
+- Have simple preparation and cleanup
+- Can realistically be completed within my time limit
+
+Don't give me full recipes yet.
+
+Give me exactly 3 options. For each, show:
+🍽️ Meal:
+⏱️ Time:
+🛒 What else I need:
+💕 Why it works tonight:
+
+Keep each option short and easy to scan.
+
+End with: "Which one sounds good? Pick 1, 2, or 3 and I'll give you the easy step-by-step recipe."
+
+After I choose, give me the complete recipe with exact ingredient amounts, simple numbered instructions, and easy substitutions when appropriate.`;
   document.getElementById("prompt").textContent=prompt;
   show("result");
 }
