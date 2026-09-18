@@ -166,7 +166,13 @@ button{
   <label>🥕 What's in the fridge?</label>
   <div class="small">Don't make a perfect list. Just type what you see.</div>
   <textarea id="ingredients" placeholder="Chicken thighs, leftover rice, broccoli, tortillas, shredded cheese..."></textarea>
-
+<label>🥩 Is your meat ready to cook?</label>
+<select id="meatReady">
+  <option>Thawed / ready to cook</option>
+  <option>Frozen</option>
+  <option>Not using meat</option>
+  <option>Not sure</option>
+</select>
   <label>😬 Any picky eaters?</label>
   <select id="picky" onchange="toggleAvoid()">
     <option>No</option>
@@ -247,6 +253,7 @@ function makePrompt(){
   const time=document.getElementById("time").value;
   const effort=document.getElementById("effort").value;
   const ingredients=document.getElementById("ingredients").value.trim();
+  const meatReady=document.getElementById("meatReady").value;
   const picky=document.getElementById("picky").value;
   const avoid=document.getElementById("avoid").value.trim();
   const style=document.getElementById("style").value;
@@ -269,10 +276,13 @@ HOUSEHOLD
 
   prompt+=`
 
+prompt+=`
+
 TONIGHT
 - What sounds good: ${style}
 - Preferred cooking method: ${method}
-- Grocery store: ${store}`;
+- Grocery store: ${store}
+- Meat status: ${meatReady}`;
 
   if(ingredients){
     prompt+=`
@@ -296,7 +306,12 @@ IMPORTANT:
 
   if(store.includes("NO")){
     prompt+=`
-- I am NOT going to the store. Only recommend meals I can reasonably make with what I listed plus common pantry basics. If something isn't essential, substitute it or leave it out.`;
+- I am NOT going to the store. Treat the ingredients I listed as the only food ingredients you know I have.
+- You may assume ONLY basic cooking staples: cooking oil, salt, pepper, and common dried seasonings.
+- Do NOT assume I have rice, pasta, bread, tortillas, potatoes, cheese, eggs, milk, vegetables, sauces, broth, or any other food unless I specifically listed it.
+- Do not include unlisted foods in the meal name or recipe as though I have them.
+- If an unlisted ingredient would improve the meal but is not essential, clearly mark it OPTIONAL and make sure the meal still works without it.
+- If I haven't listed enough food to make a complete meal, be honest about that. Make the best possible dish with what I actually have rather than inventing ingredients.`;
   }else{
     prompt+=`
 - I am willing to buy a few things, but keep the additional grocery list as short as possible.`;
@@ -306,7 +321,11 @@ IMPORTANT:
     prompt+=`
 - Prioritize meals that use the ${method}.`;
   }
-
+if(meatReady==="Frozen"){
+  prompt+=`
+- The meat is FROZEN. Do not pretend it is ready to cook. Account for safe thawing or cooking from frozen when appropriate.
+- Respect my total time limit. If the frozen meat cannot safely be prepared within that time, tell me clearly and do not give me an unrealistic recipe.`;
+}
   if(effort.includes("Bare minimum")){
     prompt+=`
 - My energy is LOW. Strongly favor the fewest steps, fewest dishes, minimal chopping, and easiest cleanup.`;
