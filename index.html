@@ -137,8 +137,9 @@ button{
   <button class="back" onclick="goHome()">← Back</button>
 
   <div class="logo">🍝 What's for dinner?</div>
+  <div class="subtitle">Let's figure out dinner without overthinking it.</div>
 
-  <label>How many people are eating?</label>
+  <label>👨‍👩‍👧 How many people are eating?</label>
   <select id="people">
     <option>2</option>
     <option>3</option>
@@ -147,7 +148,7 @@ button{
     <option>6+</option>
   </select>
 
-  <label>How much time do you have?</label>
+  <label>⏱️ How much time do you have?</label>
   <select id="time">
     <option>15 minutes</option>
     <option>30 minutes</option>
@@ -155,8 +156,16 @@ button{
     <option>I have time — give me something good</option>
   </select>
 
-  <label>🥕 What ingredients do you already have?</label>
-  <textarea id="ingredients" placeholder="Chicken, rice, broccoli, pasta…"></textarea>
+  <label>🔋 How much effort do you have in you?</label>
+  <select id="effort">
+    <option>😩 Bare minimum</option>
+    <option>🙂 Normal dinner</option>
+    <option>👩‍🍳 I don't mind cooking</option>
+  </select>
+
+  <label>🥕 What's in the fridge?</label>
+  <div class="small">Don't make a perfect list. Just type what you see.</div>
+  <textarea id="ingredients" placeholder="Chicken thighs, leftover rice, broccoli, tortillas, shredded cheese..."></textarea>
 
   <label>😬 Any picky eaters?</label>
   <select id="picky" onchange="toggleAvoid()">
@@ -165,22 +174,44 @@ button{
   </select>
 
   <div id="avoidBox" style="display:none">
-    <label>🙅 What foods should I avoid?</label>
-    <textarea id="avoid" placeholder="Onions, mushrooms, spicy food…"></textarea>
+    <label>🙅 What won't they eat?</label>
+    <textarea id="avoid" placeholder="Onions, mushrooms, spicy food..."></textarea>
   </div>
 
   <label>🍽️ What sounds good tonight?</label>
   <select id="style">
-    <option>Surprise me</option>
-    <option>Comfort food</option>
-    <option>Healthy-ish</option>
-    <option>Something the kids will love</option>
-    <option>Quick & easy</option>
+    <option>🎲 Surprise me</option>
+    <option>🍝 Comfort food</option>
+    <option>🥗 Lighter & healthier</option>
+    <option>👧 Kid-approved</option>
+    <option>🌮 Takeout-style</option>
+    <option>⚡ Fastest possible</option>
   </select>
 
-  <button onclick="makePrompt()">✨ Make My Dinner Prompt</button>
-</div>
+  <label>🍳 What do you feel like using?</label>
+  <select id="method">
+    <option>Doesn't matter</option>
+    <option>Air fryer</option>
+    <option>Crockpot</option>
+    <option>Oven</option>
+    <option>Stovetop</option>
+    <option>Grill</option>
+  </select>
 
+  <label>🏠 Are you willing to go to the store?</label>
+  <select id="store">
+    <option>Yes — if I need a few things</option>
+    <option>NO — I'm not going to the store 😩</option>
+  </select>
+
+  <label>🤔 How do you want me to help?</label>
+  <select id="decision">
+    <option>Give me 3 choices</option>
+    <option>🆘 JUST PICK FOR ME</option>
+  </select>
+
+  <button onclick="makePrompt()">✨ Rescue My Dinner</button>
+</div>
 <div id="result" class="screen">
   <button class="back" onclick="openDinner()">← Change answers</button>
 
@@ -214,65 +245,128 @@ function toggleAvoid(){
 function makePrompt(){
   const people=document.getElementById("people").value;
   const time=document.getElementById("time").value;
+  const effort=document.getElementById("effort").value;
   const ingredients=document.getElementById("ingredients").value.trim();
   const picky=document.getElementById("picky").value;
   const avoid=document.getElementById("avoid").value.trim();
   const style=document.getElementById("style").value;
+  const method=document.getElementById("method").value;
+  const store=document.getElementById("store").value;
+  const decision=document.getElementById("decision").value;
 
-  let prompt=`You are helping a busy mom figure out dinner tonight.
+  let prompt=`You are my practical dinner helper. I'm a busy mom trying to figure out what to make tonight. Make this decision easier, not more complicated.
 
-Create 3 realistic dinner ideas for ${people} people`;
+HOUSEHOLD
+- People eating: ${people}
+- Time available: ${time}
+- Energy/effort level: ${effort}
+- Picky eaters: ${picky}`;
 
-if(time.includes("minutes")){
-  prompt+=` that can be made in ${time} or less.`;
-}else{
-  prompt+=`. I have enough time tonight to make something good.`;
-}
+  if(picky==="Yes" && avoid){
+    prompt+=`
+- Foods they won't eat: ${avoid}`;
+  }
 
-if(ingredients){
   prompt+=`
 
-I already have: ${ingredients}`;
-}
+TONIGHT
+- What sounds good: ${style}
+- Preferred cooking method: ${method}
+- Grocery store: ${store}`;
 
-prompt+=`
+  if(ingredients){
+    prompt+=`
+- What I already have: ${ingredients}`;
+  }else{
+    prompt+=`
+- I didn't list ingredients I already have, so suggest meals using common household ingredients.`;
+  }
 
-Picky eaters: ${picky}`;
-
-if(picky==="Yes" && avoid){
   prompt+=`
-Foods to avoid: ${avoid}`;
-}
 
-prompt+=`
+IMPORTANT:
+- Stay within my actual time and effort level.
+- Favor simple prep and minimal cleanup.
+- Use as many ingredients I already have as reasonably possible.
+- Don't force every ingredient into one meal.
+- If I'm missing a minor ingredient, suggest an easy substitution or tell me if I can leave it out.
+- Use normal, easy-to-find ingredients.
+- Keep picky eaters and my requested food style in mind.
+- Don't assume I have unusual pantry ingredients.`;
 
-Tonight I'm in the mood for: ${style}
+  if(store.includes("NO")){
+    prompt+=`
+- I am NOT going to the store. Only recommend meals I can reasonably make with what I listed plus common pantry basics. If something isn't essential, substitute it or leave it out.`;
+  }else{
+    prompt+=`
+- I am willing to buy a few things, but keep the additional grocery list as short as possible.`;
+  }
 
-Prioritize meals that:
-- Use as many of the ingredients I already have as reasonably possible
-- Require minimal additional groceries
-- Are family-friendly and likely to appeal to kids
-- Use normal, easy-to-find ingredients
-- Have simple preparation and cleanup
-- Can realistically be completed within my time limit
+  if(method!=="Doesn't matter"){
+    prompt+=`
+- Prioritize meals that use the ${method}.`;
+  }
 
-Don't give me full recipes yet.
+  if(effort.includes("Bare minimum")){
+    prompt+=`
+- My energy is LOW. Strongly favor the fewest steps, fewest dishes, minimal chopping, and easiest cleanup.`;
+  }
 
-Give me exactly 3 options. For each, show:
+  if(decision.includes("JUST PICK")){
+    prompt+=`
+
+JUST PICK FOR ME.
+
+Do not give me multiple choices. Based on everything above, choose the ONE dinner you think makes the most sense tonight. I don't want another decision to make.
+
+Give me:
+
+🏆 TONIGHT'S DINNER:
+⏱️ Total time:
+🍳 Cooking method:
+🛒 Anything else I need:
+💕 Why you picked it:
+
+Then immediately give me:
+- Exact ingredient amounts for ${people} people
+- Easy substitutions for anything I may not have
+- Short, numbered step-by-step instructions
+- Any simple shortcut that saves time or cleanup
+
+Keep it practical, concise, and easy to follow while I'm cooking.`;
+  }else{
+    prompt+=`
+
+Give me exactly 3 dinner options. Make the three options meaningfully different when possible.
+
+Label them:
+
+1️⃣ EASIEST
+2️⃣ KID PICK
+3️⃣ SOMETHING DIFFERENT
+
+For each show:
+
 🍽️ Meal:
-⏱️ Time:
+⏱️ Total time:
+🍳 Cooking method:
 🛒 What else I need:
 💕 Why it works tonight:
 
-Keep each option short and easy to scan.
+Keep each option short and easy to scan. Don't give me the full recipes yet.
 
 End with: "Which one sounds good? Pick 1, 2, or 3 and I'll give you the easy step-by-step recipe."
 
-After I choose, give me the complete recipe with exact ingredient amounts, simple numbered instructions, and easy substitutions when appropriate.`;
+After I choose, give me:
+- Exact ingredient amounts for ${people} people
+- Easy substitutions
+- Simple numbered instructions
+- Any shortcut that saves time or cleanup.`;
+  }
+
   document.getElementById("prompt").textContent=prompt;
   show("result");
 }
-
 function copyPrompt(){
   const text=document.getElementById("prompt").textContent;
   navigator.clipboard.writeText(text).then(()=>{
